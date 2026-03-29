@@ -1,3 +1,0 @@
-- Refactored database connection configuration in `main.js` to use environment variables (`process.env`).
-- Created an `.env` file containing the initial configuration elements.
-- Installed `dotenv` dependency.
