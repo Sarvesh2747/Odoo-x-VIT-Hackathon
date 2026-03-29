@@ -13,80 +13,10 @@ export declare class ApprovalEngineService {
     reject(expenseId: string, approverId: string, companyId: string, comments: string): Promise<{
         status: string;
     }>;
-    getPendingForApprover(approverId: string, companyId: string): Promise<{
-        myApprovalStep: {
-            expense: {
-                company: {
-                    id: string;
-                    defaultCurrency: string;
-                };
-                submittedBy: {
-                    id: string;
-                    name: string;
-                    email: string;
-                };
-            } & {
-                id: string;
-                companyId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                amount: import("@prisma/client-runtime-utils").Decimal;
-                currency: string;
-                convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
-                companyCurrency: string | null;
-                exchangeRateUsed: import("@prisma/client-runtime-utils").Decimal | null;
-                rateTimestamp: Date | null;
-                category: import("@prisma/client").$Enums.ExpenseCategory;
-                description: string;
-                date: Date;
-                status: import("@prisma/client").$Enums.ExpenseStatus;
-                receiptUrl: string | null;
-                ocrExtracted: boolean;
-                submittedById: string;
-                templateId: string | null;
-                routingRuleId: string | null;
-            };
-        } & {
-            comments: string | null;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            stepOrder: number;
-            approverId: string;
-            status: import("@prisma/client").$Enums.ApprovalStatus;
-            actionedAt: Date | null;
-            expenseId: string;
-        };
-        company: {
-            id: string;
-            defaultCurrency: string;
-        };
-        submittedBy: {
-            id: string;
-            name: string;
-            email: string;
-        };
-        id: string;
-        companyId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        currency: string;
-        convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
-        companyCurrency: string | null;
-        exchangeRateUsed: import("@prisma/client-runtime-utils").Decimal | null;
-        rateTimestamp: Date | null;
-        category: import("@prisma/client").$Enums.ExpenseCategory;
-        description: string;
-        date: Date;
-        status: import("@prisma/client").$Enums.ExpenseStatus;
-        receiptUrl: string | null;
-        ocrExtracted: boolean;
-        submittedById: string;
-        templateId: string | null;
-        routingRuleId: string | null;
-    }[]>;
+    getPendingForApprover(approverId: string, companyId: string): Promise<any[]>;
     private validateApproverAction;
+    private getApproverContext;
+    private buildActionComments;
     private getCurrentStep;
     private evaluateConditionalRules;
     private finalizeExpense;

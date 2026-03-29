@@ -2,79 +2,7 @@ import { ApprovalsService } from '../services/approvals.service';
 export declare class ApprovalsController {
     private readonly approvalsService;
     constructor(approvalsService: ApprovalsService);
-    getPending(user: any): Promise<{
-        myApprovalStep: {
-            expense: {
-                company: {
-                    id: string;
-                    defaultCurrency: string;
-                };
-                submittedBy: {
-                    id: string;
-                    name: string;
-                    email: string;
-                };
-            } & {
-                id: string;
-                companyId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                amount: import("@prisma/client-runtime-utils").Decimal;
-                currency: string;
-                convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
-                companyCurrency: string | null;
-                exchangeRateUsed: import("@prisma/client-runtime-utils").Decimal | null;
-                rateTimestamp: Date | null;
-                category: import("@prisma/client").$Enums.ExpenseCategory;
-                description: string;
-                date: Date;
-                status: import("@prisma/client").$Enums.ExpenseStatus;
-                receiptUrl: string | null;
-                ocrExtracted: boolean;
-                submittedById: string;
-                templateId: string | null;
-                routingRuleId: string | null;
-            };
-        } & {
-            comments: string | null;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            stepOrder: number;
-            approverId: string;
-            status: import("@prisma/client").$Enums.ApprovalStatus;
-            actionedAt: Date | null;
-            expenseId: string;
-        };
-        company: {
-            id: string;
-            defaultCurrency: string;
-        };
-        submittedBy: {
-            id: string;
-            name: string;
-            email: string;
-        };
-        id: string;
-        companyId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        currency: string;
-        convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
-        companyCurrency: string | null;
-        exchangeRateUsed: import("@prisma/client-runtime-utils").Decimal | null;
-        rateTimestamp: Date | null;
-        category: import("@prisma/client").$Enums.ExpenseCategory;
-        description: string;
-        date: Date;
-        status: import("@prisma/client").$Enums.ExpenseStatus;
-        receiptUrl: string | null;
-        ocrExtracted: boolean;
-        submittedById: string;
-        templateId: string | null;
-        routingRuleId: string | null;
-    }[]>;
+    getPending(user: any): Promise<any[]>;
     approve(expenseId: string, comments: string, user: any): Promise<{
         status: string;
         reason: string;
@@ -90,23 +18,23 @@ export declare class ApprovalsController {
             };
         } & {
             id: string;
+            approverId: string;
+            stepOrder: number;
             createdAt: Date;
             updatedAt: Date;
-            stepOrder: number;
-            roleLabel: string | null;
-            approverId: string;
             templateId: string;
+            roleLabel: string | null;
         })[];
     } & {
         id: string;
-        companyId: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        name: string;
         conditionalRuleType: import("@prisma/client").$Enums.ConditionalRuleType;
         percentageThreshold: number | null;
-        isDefault: boolean;
         specificApproverId: string | null;
+        isDefault: boolean;
     }>;
     getTemplates(companyId: string): Promise<({
         steps: ({
@@ -117,23 +45,23 @@ export declare class ApprovalsController {
             };
         } & {
             id: string;
+            approverId: string;
+            stepOrder: number;
             createdAt: Date;
             updatedAt: Date;
-            stepOrder: number;
-            roleLabel: string | null;
-            approverId: string;
             templateId: string;
+            roleLabel: string | null;
         })[];
     } & {
         id: string;
-        companyId: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        name: string;
         conditionalRuleType: import("@prisma/client").$Enums.ConditionalRuleType;
         percentageThreshold: number | null;
-        isDefault: boolean;
         specificApproverId: string | null;
+        isDefault: boolean;
     })[]>;
     getTemplate(id: string, companyId: string): Promise<{
         steps: ({
@@ -144,34 +72,34 @@ export declare class ApprovalsController {
             };
         } & {
             id: string;
+            approverId: string;
+            stepOrder: number;
             createdAt: Date;
             updatedAt: Date;
-            stepOrder: number;
-            roleLabel: string | null;
-            approverId: string;
             templateId: string;
+            roleLabel: string | null;
         })[];
     } & {
         id: string;
-        companyId: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        name: string;
         conditionalRuleType: import("@prisma/client").$Enums.ConditionalRuleType;
         percentageThreshold: number | null;
-        isDefault: boolean;
         specificApproverId: string | null;
+        isDefault: boolean;
     }>;
     updateTemplate(id: string, dto: any, companyId: string): Promise<{
         id: string;
-        companyId: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        name: string;
         conditionalRuleType: import("@prisma/client").$Enums.ConditionalRuleType;
         percentageThreshold: number | null;
-        isDefault: boolean;
         specificApproverId: string | null;
+        isDefault: boolean;
     }>;
     deleteTemplate(id: string, companyId: string): Promise<{
         message: string;
@@ -184,12 +112,12 @@ export declare class ApprovalsController {
         };
     } & {
         id: string;
+        approverId: string;
+        stepOrder: number;
         createdAt: Date;
         updatedAt: Date;
-        stepOrder: number;
-        roleLabel: string | null;
-        approverId: string;
         templateId: string;
+        roleLabel: string | null;
     }>;
     deleteStep(id: string, companyId: string): Promise<{
         message: string;
@@ -201,9 +129,9 @@ export declare class ApprovalsController {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
         templateId: string;
         minAmount: import("@prisma/client-runtime-utils").Decimal;
         maxAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -217,9 +145,9 @@ export declare class ApprovalsController {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
         templateId: string;
         minAmount: import("@prisma/client-runtime-utils").Decimal;
         maxAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -235,23 +163,23 @@ export declare class ApprovalsController {
                 };
             } & {
                 id: string;
+                approverId: string;
+                stepOrder: number;
                 createdAt: Date;
                 updatedAt: Date;
-                stepOrder: number;
-                roleLabel: string | null;
-                approverId: string;
                 templateId: string;
+                roleLabel: string | null;
             })[];
         } & {
             id: string;
-            companyId: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            companyId: string;
+            name: string;
             conditionalRuleType: import("@prisma/client").$Enums.ConditionalRuleType;
             percentageThreshold: number | null;
-            isDefault: boolean;
             specificApproverId: string | null;
+            isDefault: boolean;
         }) | null;
         templateId: string;
         routingRuleId: string | null;
@@ -268,9 +196,9 @@ export declare class ApprovalsController {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
         templateId: string;
         minAmount: import("@prisma/client-runtime-utils").Decimal;
         maxAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -284,9 +212,9 @@ export declare class ApprovalsController {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
         templateId: string;
         minAmount: import("@prisma/client-runtime-utils").Decimal;
         maxAmount: import("@prisma/client-runtime-utils").Decimal | null;

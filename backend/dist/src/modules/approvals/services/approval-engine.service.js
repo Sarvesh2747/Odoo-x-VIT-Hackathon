@@ -69,10 +69,11 @@ let ApprovalEngineService = ApprovalEngineService_1 = class ApprovalEngineServic
         this.logger.log(`Initialized ${approvalRecords.length} approval steps for expense ${expenseId}`);
     }
     async approve(expenseId, approverId, companyId, comments) {
-        const { expense, currentStep } = await this.validateApproverAction(expenseId, approverId, companyId);
+        const { expense, currentStep, isAdminOverride } = await this.validateApproverAction(expenseId, approverId, companyId);
+        const actionComments = this.buildActionComments(comments, approverId, isAdminOverride);
         await this.prisma.expenseApproval.update({
             where: { id: currentStep.id },
-            data: { status: 'APPROVED', comments, actionedAt: new Date() },
+            data: { status: 'APPROVED', comments: actionComments, actionedAt: new Date() },
         });
         const allApprovals = await this.prisma.expenseApproval.findMany({
             where: { expenseId },
@@ -98,10 +99,11 @@ let ApprovalEngineService = ApprovalEngineService_1 = class ApprovalEngineServic
         return { status: 'PENDING', reason: 'Awaiting next approver' };
     }
     async reject(expenseId, approverId, companyId, comments) {
-        const { currentStep } = await this.validateApproverAction(expenseId, approverId, companyId);
+        const { currentStep, isAdminOverride } = await this.validateApproverAction(expenseId, approverId, companyId);
+        const actionComments = this.buildActionComments(comments, approverId, isAdminOverride);
         await this.prisma.expenseApproval.update({
             where: { id: currentStep.id },
-            data: { status: 'REJECTED', comments, actionedAt: new Date() },
+            data: { status: 'REJECTED', comments: actionComments, actionedAt: new Date() },
         });
         const allApprovals = await this.prisma.expenseApproval.findMany({
             where: { expenseId },
@@ -110,6 +112,34 @@ let ApprovalEngineService = ApprovalEngineService_1 = class ApprovalEngineServic
         return { status: 'REJECTED' };
     }
     async getPendingForApprover(approverId, companyId) {
+        const actor = await this.getApproverContext(approverId, companyId);
+        if (actor.role === 'ADMIN') {
+            const pendingApprovals = await this.prisma.expenseApproval.findMany({
+                where: {
+                    status: 'PENDING',
+                    expense: { companyId, status: 'PENDING' },
+                },
+                include: {
+                    expense: {
+                        include: {
+                            submittedBy: { select: { id: true, name: true, email: true } },
+                            company: { select: { id: true, defaultCurrency: true } },
+                        },
+                    },
+                },
+                orderBy: [{ expenseId: 'asc' }, { stepOrder: 'asc' }],
+            });
+            const currentPendingByExpense = new Map();
+            for (const approval of pendingApprovals) {
+                if (!currentPendingByExpense.has(approval.expenseId)) {
+                    currentPendingByExpense.set(approval.expenseId, {
+                        ...approval.expense,
+                        myApprovalStep: approval,
+                    });
+                }
+            }
+            return Array.from(currentPendingByExpense.values());
+        }
         const approvals = await this.prisma.expenseApproval.findMany({
             where: { approverId, status: 'PENDING' },
             include: {
@@ -135,6 +165,7 @@ let ApprovalEngineService = ApprovalEngineService_1 = class ApprovalEngineServic
         return pendingExpenses;
     }
     async validateApproverAction(expenseId, approverId, companyId) {
+        const actor = await this.getApproverContext(approverId, companyId);
         const expense = await this.prisma.expense.findFirst({
             where: { id: expenseId, companyId },
         });
@@ -146,10 +177,29 @@ let ApprovalEngineService = ApprovalEngineService_1 = class ApprovalEngineServic
         const currentStep = await this.getCurrentStep(expenseId);
         if (!currentStep)
             throw new common_1.BadRequestException('No pending approval step found');
-        if (currentStep.approverId !== approverId) {
+        const isAdminOverride = actor.role === 'ADMIN' && currentStep.approverId !== approverId;
+        if (currentStep.approverId !== approverId && !isAdminOverride) {
             throw new common_1.ForbiddenException('It is not your turn to approve this expense');
         }
-        return { expense, currentStep };
+        return { expense, currentStep, isAdminOverride };
+    }
+    async getApproverContext(approverId, companyId) {
+        const approver = await this.prisma.user.findFirst({
+            where: { id: approverId, companyId },
+            select: { id: true, role: true },
+        });
+        if (!approver) {
+            throw new common_1.ForbiddenException('User not found in this company');
+        }
+        return approver;
+    }
+    buildActionComments(comments, approverId, isAdminOverride) {
+        if (!isAdminOverride)
+            return comments;
+        const overrideNote = `[Admin override by ${approverId}]`;
+        if (!comments)
+            return overrideNote;
+        return `${overrideNote} ${comments}`;
     }
     async getCurrentStep(expenseId) {
         return this.prisma.expenseApproval.findFirst({

@@ -31,28 +31,32 @@ export declare class ExpensesController {
         } & {
             comments: string | null;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            stepOrder: number;
+            expenseId: string;
             approverId: string;
+            stepOrder: number;
             status: import("@prisma/client").$Enums.ApprovalStatus;
             actionedAt: Date | null;
-            expenseId: string;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         ocrJob: {
             id: string;
+            expenseId: string;
+            status: import("@prisma/client").$Enums.OcrJobStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.OcrJobStatus;
-            expenseId: string;
             rawResponse: import("@prisma/client/runtime/client").JsonValue | null;
             parsedData: import("@prisma/client/runtime/client").JsonValue | null;
         } | null;
     } & {
         id: string;
-        companyId: string;
+        status: import("@prisma/client").$Enums.ExpenseStatus;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        submittedById: string;
+        templateId: string | null;
+        routingRuleId: string | null;
         amount: import("@prisma/client-runtime-utils").Decimal;
         currency: string;
         convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -62,12 +66,8 @@ export declare class ExpensesController {
         category: import("@prisma/client").$Enums.ExpenseCategory;
         description: string;
         date: Date;
-        status: import("@prisma/client").$Enums.ExpenseStatus;
         receiptUrl: string | null;
         ocrExtracted: boolean;
-        submittedById: string;
-        templateId: string | null;
-        routingRuleId: string | null;
     }>;
     findAll(user: any, status?: ExpenseStatus, category?: string, page?: string, limit?: string): Promise<import("../../../common/utils/pagination.util").PaginatedResult<{
         submittedBy: {
@@ -88,19 +88,23 @@ export declare class ExpensesController {
         } & {
             comments: string | null;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            stepOrder: number;
+            expenseId: string;
             approverId: string;
+            stepOrder: number;
             status: import("@prisma/client").$Enums.ApprovalStatus;
             actionedAt: Date | null;
-            expenseId: string;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
     } & {
         id: string;
-        companyId: string;
+        status: import("@prisma/client").$Enums.ExpenseStatus;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        submittedById: string;
+        templateId: string | null;
+        routingRuleId: string | null;
         amount: import("@prisma/client-runtime-utils").Decimal;
         currency: string;
         convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -110,12 +114,8 @@ export declare class ExpensesController {
         category: import("@prisma/client").$Enums.ExpenseCategory;
         description: string;
         date: Date;
-        status: import("@prisma/client").$Enums.ExpenseStatus;
         receiptUrl: string | null;
         ocrExtracted: boolean;
-        submittedById: string;
-        templateId: string | null;
-        routingRuleId: string | null;
     }>>;
     getStats(companyId: string): Promise<{
         total: number;
@@ -150,28 +150,32 @@ export declare class ExpensesController {
         } & {
             comments: string | null;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            stepOrder: number;
+            expenseId: string;
             approverId: string;
+            stepOrder: number;
             status: import("@prisma/client").$Enums.ApprovalStatus;
             actionedAt: Date | null;
-            expenseId: string;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         ocrJob: {
             id: string;
+            expenseId: string;
+            status: import("@prisma/client").$Enums.OcrJobStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.OcrJobStatus;
-            expenseId: string;
             rawResponse: import("@prisma/client/runtime/client").JsonValue | null;
             parsedData: import("@prisma/client/runtime/client").JsonValue | null;
         } | null;
     } & {
         id: string;
-        companyId: string;
+        status: import("@prisma/client").$Enums.ExpenseStatus;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        submittedById: string;
+        templateId: string | null;
+        routingRuleId: string | null;
         amount: import("@prisma/client-runtime-utils").Decimal;
         currency: string;
         convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -181,18 +185,18 @@ export declare class ExpensesController {
         category: import("@prisma/client").$Enums.ExpenseCategory;
         description: string;
         date: Date;
-        status: import("@prisma/client").$Enums.ExpenseStatus;
         receiptUrl: string | null;
         ocrExtracted: boolean;
-        submittedById: string;
-        templateId: string | null;
-        routingRuleId: string | null;
     }>;
     cancel(id: string, user: any): Promise<{
         id: string;
-        companyId: string;
+        status: import("@prisma/client").$Enums.ExpenseStatus;
         createdAt: Date;
         updatedAt: Date;
+        companyId: string;
+        submittedById: string;
+        templateId: string | null;
+        routingRuleId: string | null;
         amount: import("@prisma/client-runtime-utils").Decimal;
         currency: string;
         convertedAmount: import("@prisma/client-runtime-utils").Decimal | null;
@@ -202,11 +206,7 @@ export declare class ExpensesController {
         category: import("@prisma/client").$Enums.ExpenseCategory;
         description: string;
         date: Date;
-        status: import("@prisma/client").$Enums.ExpenseStatus;
         receiptUrl: string | null;
         ocrExtracted: boolean;
-        submittedById: string;
-        templateId: string | null;
-        routingRuleId: string | null;
     }>;
 }

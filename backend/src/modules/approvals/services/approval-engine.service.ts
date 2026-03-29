@@ -8,6 +8,11 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { TemplateRoutingService } from './template-routing.service';
 
+type ApproverContext = {
+  id: string;
+  role: string;
+};
+
 @Injectable()
 export class ApprovalEngineService {
   private readonly logger = new Logger(ApprovalEngineService.name);
@@ -95,16 +100,18 @@ export class ApprovalEngineService {
   // ─── APPROVE ─────────────────────────────────────────────────────────────────
 
   async approve(expenseId: string, approverId: string, companyId: string, comments?: string) {
-    const { expense, currentStep } = await this.validateApproverAction(
+    const { expense, currentStep, isAdminOverride } = await this.validateApproverAction(
       expenseId,
       approverId,
       companyId,
     );
 
+    const actionComments = this.buildActionComments(comments, approverId, isAdminOverride);
+
     // Mark this step approved
     await this.prisma.expenseApproval.update({
       where: { id: currentStep.id },
-      data: { status: 'APPROVED', comments, actionedAt: new Date() },
+      data: { status: 'APPROVED', comments: actionComments, actionedAt: new Date() },
     });
 
     // Evaluate conditional rules
@@ -145,16 +152,18 @@ export class ApprovalEngineService {
   // ─── REJECT ──────────────────────────────────────────────────────────────────
 
   async reject(expenseId: string, approverId: string, companyId: string, comments: string) {
-    const { currentStep } = await this.validateApproverAction(
+    const { currentStep, isAdminOverride } = await this.validateApproverAction(
       expenseId,
       approverId,
       companyId,
     );
 
+    const actionComments = this.buildActionComments(comments, approverId, isAdminOverride);
+
     // Mark this step rejected
     await this.prisma.expenseApproval.update({
       where: { id: currentStep.id },
-      data: { status: 'REJECTED', comments, actionedAt: new Date() },
+      data: { status: 'REJECTED', comments: actionComments, actionedAt: new Date() },
     });
 
     // Mark all remaining steps SKIPPED and expense REJECTED
@@ -169,6 +178,39 @@ export class ApprovalEngineService {
   // ─── PENDING FOR APPROVER ────────────────────────────────────────────────────
 
   async getPendingForApprover(approverId: string, companyId: string) {
+    const actor = await this.getApproverContext(approverId, companyId);
+
+    if (actor.role === 'ADMIN') {
+      // Admin sees one current pending step per expense in their company.
+      const pendingApprovals = await this.prisma.expenseApproval.findMany({
+        where: {
+          status: 'PENDING',
+          expense: { companyId, status: 'PENDING' },
+        },
+        include: {
+          expense: {
+            include: {
+              submittedBy: { select: { id: true, name: true, email: true } },
+              company: { select: { id: true, defaultCurrency: true } },
+            },
+          },
+        },
+        orderBy: [{ expenseId: 'asc' }, { stepOrder: 'asc' }],
+      });
+
+      const currentPendingByExpense = new Map<string, any>();
+      for (const approval of pendingApprovals) {
+        if (!currentPendingByExpense.has(approval.expenseId)) {
+          currentPendingByExpense.set(approval.expenseId, {
+            ...approval.expense,
+            myApprovalStep: approval,
+          });
+        }
+      }
+
+      return Array.from(currentPendingByExpense.values());
+    }
+
     // Get all PENDING approvals assigned to this user
     const approvals = await this.prisma.expenseApproval.findMany({
       where: { approverId, status: 'PENDING' },
@@ -200,6 +242,8 @@ export class ApprovalEngineService {
   // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
   private async validateApproverAction(expenseId: string, approverId: string, companyId: string) {
+    const actor = await this.getApproverContext(approverId, companyId);
+
     const expense = await this.prisma.expense.findFirst({
       where: { id: expenseId, companyId },
     });
@@ -212,11 +256,39 @@ export class ApprovalEngineService {
     const currentStep = await this.getCurrentStep(expenseId);
     if (!currentStep) throw new BadRequestException('No pending approval step found');
 
-    if (currentStep.approverId !== approverId) {
+    const isAdminOverride = actor.role === 'ADMIN' && currentStep.approverId !== approverId;
+
+    if (currentStep.approverId !== approverId && !isAdminOverride) {
       throw new ForbiddenException('It is not your turn to approve this expense');
     }
 
-    return { expense, currentStep };
+    return { expense, currentStep, isAdminOverride };
+  }
+
+  private async getApproverContext(approverId: string, companyId: string): Promise<ApproverContext> {
+    const approver = await this.prisma.user.findFirst({
+      where: { id: approverId, companyId },
+      select: { id: true, role: true },
+    });
+
+    if (!approver) {
+      throw new ForbiddenException('User not found in this company');
+    }
+
+    return approver;
+  }
+
+  private buildActionComments(
+    comments: string | undefined,
+    approverId: string,
+    isAdminOverride: boolean,
+  ) {
+    if (!isAdminOverride) return comments;
+
+    const overrideNote = `[Admin override by ${approverId}]`;
+    if (!comments) return overrideNote;
+
+    return `${overrideNote} ${comments}`;
   }
 
   private async getCurrentStep(expenseId: string) {
