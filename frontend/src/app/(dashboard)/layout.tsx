@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { CanAccess } from '@/components/shared/can-access';
 import { LayoutDashboard, Users, CreditCard, ClipboardCheck, Settings } from 'lucide-react';
+import { dashboardPathForRole } from '@/lib/dashboard-path';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const dashboardHref = user ? dashboardPathForRole(user.role) : '/dashboard';
 
   useEffect(() => {
     if (user?.mustChangePassword && pathname !== '/force-change-password') {
@@ -25,9 +27,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: dashboardHref, label: 'Dashboard', icon: LayoutDashboard },
     { href: '/expenses', label: 'Expenses', icon: CreditCard },
   ];
+
+  const isNavActive = (href: string) => {
+    if (href === dashboardHref) return pathname.startsWith('/dashboard');
+    return pathname.startsWith(href);
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -47,10 +54,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <nav className="flex-1 space-y-2">
             {navItems.map((item) => (
               <Link 
-                key={item.href} 
+                key={item.label} 
                 href={item.href}
                 className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  pathname.startsWith(item.href) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'
+                  isNavActive(item.href)
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted text-muted-foreground'
                 }`}
               >
                 <item.icon className="h-4 w-4" />
