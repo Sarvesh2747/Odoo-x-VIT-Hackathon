@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useExpense, useCancelExpense } from '@/lib/hooks/useExpenses';
+import { useExpense, useCancelExpense } from '@/hooks/useExpenses';
 import { ApprovalTimeline } from '@/components/shared/approval-timeline';
 import { SkeletonCard } from '@/components/shared/skeleton';
 import { Button } from '@/components/ui/button';
